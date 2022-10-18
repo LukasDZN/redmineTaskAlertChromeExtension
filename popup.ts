@@ -32,7 +32,7 @@ var extensionContent = document.getElementById('extensionContent') as HTMLButton
 var newTabEnabledSwitch = document.getElementById('newTabEnabledSwitch') as HTMLButtonElement;
 var browserAlertEnabledSwitch = document.getElementById('browserAlertEnabledSwitch') as HTMLButtonElement;
 var iconBadgeEnabledSwitch = document.getElementById('iconBadgeEnabledSwitch') as HTMLButtonElement;
-var osNotificationEnabledSwitch = document.getElementById('osNotificationEnabledSwitch') as HTMLButtonElement;
+// var osNotificationEnabledSwitch = document.getElementById('osNotificationEnabledSwitch') as HTMLButtonElement;
 // Settings text input
 var settingsRefreshIntervalInMinutes = document.getElementById('refreshIntervalInMinutes') as HTMLButtonElement;
 var settingsDomainName = document.getElementById('domainName') as HTMLButtonElement;
@@ -407,7 +407,8 @@ const clearAndDisplaySettings = async () => {
       }
       ifValueTrueThenCheckboxChecked(settingsObject.newTabEnabled, newTabEnabledSwitch)
       ifValueTrueThenCheckboxChecked(settingsObject.browserAlertEnabled, browserAlertEnabledSwitch)
-      ifValueTrueThenCheckboxChecked(settingsObject.osNotificationEnabled, osNotificationEnabledSwitch)
+      ifValueTrueThenCheckboxChecked(settingsObject.iconBadgeEnabled, iconBadgeEnabledSwitch)
+      // ifValueTrueThenCheckboxChecked(settingsObject.osNotificationEnabled, osNotificationEnabledSwitch)
       // Input fields
       const setInputFieldValue = (value, inputFieldElement) => {
         if (value && inputFieldElement) {
@@ -443,12 +444,23 @@ const saveSettingsFromUiToStorageLocal = () => {
     newTabEnabled: newTabEnabledSwitch.checked ? true : false,
     iconBadgeEnabled: iconBadgeEnabledSwitch.checked ? true : false,
     newWindowEnabled: false,
-    osNotificationEnabled: osNotificationEnabledSwitch.checked ? true : false,
+    // osNotificationEnabled: osNotificationEnabledSwitch.checked ? true : false,
     playASoundEnabled: false,
     refreshIntervalInMinutes: settingsRefreshIntervalInMinutes.value,
     domainName: settingsDomainName.value,
   })
   asyncSetStorageLocal('redmineTaskNotificationsExtensionSettings', updatedSettingsObject)
+}
+
+const hideIntroductionText = () => {
+  if (localStorage.getItem('hideIntro')) {
+    document.querySelector('#introductionText').style.display = 'none';
+    return
+  }
+  document.querySelector('#hideIntro')?.addEventListener('click', () => {
+    document.querySelector('#introductionText').style.display = 'none';
+  })
+  localStorage.setItem('hideIntro', true)
 }
 
 
@@ -557,6 +569,7 @@ before work).
   
   // Settings
   settingModalDisplay()
+  hideIntroductionText()
   // Settings - Validators
   addMultipleEventListener(settingsRefreshIntervalInMinutes, ['input'], settingsRefreshIntervalInMinutesValidation) // change is unneeded: ['input', 'change']
   settingsDomainName.addEventListener('input', () => settingsDomainNameValidation())

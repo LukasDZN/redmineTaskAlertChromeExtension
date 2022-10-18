@@ -70,6 +70,17 @@
         width: 3rem;
       }
 
+      #hideIntro {
+        font-size: 0.8em;
+        color: darkblue;
+        text-decoration: underline;
+      }
+
+      #hideIntro:hover {
+        color: black;
+        cursor: pointer;
+      }
+
       .modal-header {
         align-items: center;
         border-bottom: 0.5px solid #dadada;
@@ -180,11 +191,11 @@
       } */
       
       #activeAlertsListThead {
-        background-color: #EDD94C;
+        background-color: #fffdeb;
       }
 
       #triggeredAlertListThead {
-        background-color: lightgray;
+        background-color: #f1f1f1;
       }
 
       label {
@@ -251,25 +262,27 @@
           /* Add alert */
 
       #addButton {
-        background-color: rgb(102, 228, 144);
+        background-color: rgb(67 174 102);
         color: rgb(255, 255, 255);
-        font-size: 1.2rem;
+        font-size: 0.8rem;
         font-weight: bold;
+        margin: 1.4rem 0.6rem 0 0;
+        padding: 0.25rem 0.6rem;
       }
         
       #addButton:hover {
-        background-color: rgb(158, 240, 185);
+        background-color: rgb(54, 146, 85);
       }
 
       #addButton:active {
-        background-color: rgb(80, 206, 122);
+        background-color: rgb(31, 109, 57);
       }
 
           /* Delete active alert */
 
       .activeAlertDelete {
         background-color: white;
-        color: rgb(235, 103, 103);
+        color: rgb(143 122 87);
         outline: solid 1px #ffffff;
         font-size: 0.85rem;
         /* font-weight: bold; */
@@ -631,13 +644,13 @@
           </label>
         </div>
 
-        <div class="settingConfigDiv gridWrapper">
+        <!-- <div class="settingConfigDiv gridWrapper">
           <p>Display an OS notification.</p>
           <label class="switch">
             <input type="checkbox" id="osNotificationEnabledSwitch">
             <span class="slider round"></span>
           </label>
-        </div>
+        </div> -->
 
         <div>
           <p>Alert refresh interval (low values might impact browser performance).</p>
@@ -668,6 +681,7 @@
           you will be notified according to your preferences which can be configured in settings (top right).
           Alerts sync accross devices that share the same google account.
         </p>
+        <span id="hideIntro">Hide introduction</span>
       </div>
 
       <!-- Create an alert -->
@@ -693,8 +707,8 @@
           </div>
 
           <div class="flex-container-child-createAlert">
-            <label for="addButton">Create</label>
-            <button name="addButton" class="genericButton" id="addButton">+</button>
+            <!-- <label for="addButton">Create</label> -->
+            <button name="addButton" class="genericButton" id="addButton">Add</button>
           </div>
         </div>
       </section>

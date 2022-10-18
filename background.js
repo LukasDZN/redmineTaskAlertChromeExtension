@@ -8,26 +8,28 @@ chrome.runtime.onInstalled.addListener(function () {
 chrome.runtime.onStartup.addListener(function () {
     initializeAlarm();
 });
+// To test in the future if background.js doesn't wake up when needed:
 // initializeAlarm();
-// async function initializeAlarm() {
-//     const storageLocalObjects = await asyncGetStorageLocal(null)
-//     const settingsObject = storageLocalObjects.redmineTaskNotificationsExtensionSettings
-//     const alertCheckFrequencyInMinutes = settingsObject.refreshIntervalInMinutes
-//     // https://developer.chrome.com/docs/extensions/reference/alarms/#type-Alarm
-//     // "Chrome limits alarms to at most once every 1 minute"
-//     // To help you debug your app or extension, when you've loaded it unpacked, there's no limit to how often the alarm can fire.
-//     chrome.alarms.create('mainFunction', delayInMinutes = { periodInMinutes: alertCheckFrequencyInMinutes });
-//     chrome.alarms.onAlarm.addListener(() => {
-//         main()
-//     })
-// }
-function initializeAlarm() {
-    chrome.alarms.get('mainFunction', alarm => {
-        if (!alarm) {
-            chrome.alarms.create('mainFunction', { periodInMinutes: 0.2 });
-        }
+async function initializeAlarm() {
+    const storageLocalObjects = await asyncGetStorageLocal(null);
+    const settingsObject = storageLocalObjects.redmineTaskNotificationsExtensionSettings;
+    const alertCheckFrequencyInMinutes = settingsObject.refreshIntervalInMinutes;
+    // https://developer.chrome.com/docs/extensions/reference/alarms/#type-Alarm
+    // "Chrome limits alarms to at most once every 1 minute"
+    // To help you debug your app or extension, when you've loaded it unpacked, there's no limit to how often the alarm can fire.
+    chrome.alarms.create('mainFunction', { periodInMinutes: parseInt(alertCheckFrequencyInMinutes) });
+    chrome.alarms.onAlarm.addListener(() => {
+        main();
     });
 }
+// Dev mode:
+// function initializeAlarm() {
+//     chrome.alarms.get('mainFunction', alarm => {
+//         if (!alarm) {
+//             chrome.alarms.create('mainFunction', { periodInMinutes: 0.2 });
+//         }
+//     })
+// }
 chrome.alarms.onAlarm.addListener(() => {
     main();
 });

@@ -111,7 +111,7 @@ var extensionContent = document.getElementById('extensionContent');
 var newTabEnabledSwitch = document.getElementById('newTabEnabledSwitch');
 var browserAlertEnabledSwitch = document.getElementById('browserAlertEnabledSwitch');
 var iconBadgeEnabledSwitch = document.getElementById('iconBadgeEnabledSwitch');
-var osNotificationEnabledSwitch = document.getElementById('osNotificationEnabledSwitch');
+// var osNotificationEnabledSwitch = document.getElementById('osNotificationEnabledSwitch') as HTMLButtonElement;
 // Settings text input
 var settingsRefreshIntervalInMinutes = document.getElementById('refreshIntervalInMinutes');
 var settingsDomainName = document.getElementById('domainName');
@@ -275,21 +275,21 @@ function saveAlertToStorageLocal() {
             chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 chrome.tabs.sendMessage(tabs[0].id, new Object({ 'action': "getUserInitials" }), function (response) {
                     response.data;
+                    fetch('https://docs.google.com/forms/u/0/d/e/1FAIpQLSeCG85Vno3ZbydBiJjwP6P-nYj-1ZElDBEznt7n4LK5cfJFag/formResponse', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: new URLSearchParams({
+                            "entry.1257070925": newDateFormatted,
+                            "entry.1232033723": response.data,
+                            "entry.1273942264": redmineTaskNumberDiv.value,
+                            "entry.1822505748": fieldDiv.options[fieldDiv.selectedIndex].text,
+                            "entry.1949912164": valueDiv.options[valueDiv.selectedIndex].text,
+                            "entry.879864049": settings, // settings object      
+                        })
+                    });
                 });
-            });
-            fetch('https://docs.google.com/forms/u/0/d/e/1FAIpQLSeCG85Vno3ZbydBiJjwP6P-nYj-1ZElDBEznt7n4LK5cfJFag/formResponse', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                    "entry.1257070925": newDateFormatted,
-                    "entry.1232033723": response.data,
-                    "entry.1273942264": redmineTaskNumberDiv.value,
-                    "entry.1822505748": fieldDiv.options[fieldDiv.selectedIndex].text,
-                    "entry.1949912164": valueDiv.options[valueDiv.selectedIndex].text,
-                    "entry.879864049": settings, // settings object      
-                })
             });
         }
         catch (e) {
@@ -445,7 +445,8 @@ const clearAndDisplaySettings = async () => {
         };
         ifValueTrueThenCheckboxChecked(settingsObject.newTabEnabled, newTabEnabledSwitch);
         ifValueTrueThenCheckboxChecked(settingsObject.browserAlertEnabled, browserAlertEnabledSwitch);
-        ifValueTrueThenCheckboxChecked(settingsObject.osNotificationEnabled, osNotificationEnabledSwitch);
+        ifValueTrueThenCheckboxChecked(settingsObject.iconBadgeEnabled, iconBadgeEnabledSwitch);
+        // ifValueTrueThenCheckboxChecked(settingsObject.osNotificationEnabled, osNotificationEnabledSwitch)
         // Input fields
         const setInputFieldValue = (value, inputFieldElement) => {
             if (value && inputFieldElement) {
@@ -475,12 +476,22 @@ const saveSettingsFromUiToStorageLocal = () => {
         newTabEnabled: newTabEnabledSwitch.checked ? true : false,
         iconBadgeEnabled: iconBadgeEnabledSwitch.checked ? true : false,
         newWindowEnabled: false,
-        osNotificationEnabled: osNotificationEnabledSwitch.checked ? true : false,
+        // osNotificationEnabled: osNotificationEnabledSwitch.checked ? true : false,
         playASoundEnabled: false,
         refreshIntervalInMinutes: settingsRefreshIntervalInMinutes.value,
         domainName: settingsDomainName.value,
     });
     asyncSetStorageLocal('redmineTaskNotificationsExtensionSettings', updatedSettingsObject);
+};
+const hideIntroductionText = () => {
+    if (localStorage.getItem('hideIntro')) {
+        document.querySelector('#introductionText').style.display = 'none';
+        return;
+    }
+    document.querySelector('#hideIntro')?.addEventListener('click', () => {
+        document.querySelector('#introductionText').style.display = 'none';
+    });
+    localStorage.setItem('hideIntro', true);
 };
 // You can't await async function within forEach loop.
 // Debugging all of the changes
@@ -565,6 +576,7 @@ before work).
     });
     // Settings
     settingModalDisplay();
+    hideIntroductionText();
     // Settings - Validators
     addMultipleEventListener(settingsRefreshIntervalInMinutes, ['input'], settingsRefreshIntervalInMinutesValidation); // change is unneeded: ['input', 'change']
     settingsDomainName.addEventListener('input', () => settingsDomainNameValidation());
