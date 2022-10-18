@@ -14,8 +14,8 @@ Note: Alerts will also sync between devices that use the same Chrome Google acco
 
 ## Main
 
-![image](https://user-images.githubusercontent.com/48087057/194787561-0fa45477-b333-47e9-bdb6-f87f20df453e.png)
+![image](https://user-images.githubusercontent.com/48087057/196307551-3f53fe61-941a-42a6-8d1c-183e5c367267.png)
 
 ## Settings
 
-![image](https://user-images.githubusercontent.com/48087057/194787620-15633400-3df0-4a23-94b6-6da85c9027e1.png)
+![image](https://user-images.githubusercontent.com/48087057/196307619-991a5475-1577-4ec6-b968-c709360c0ccf.png)
