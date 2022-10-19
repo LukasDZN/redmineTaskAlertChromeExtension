@@ -246,6 +246,3 @@ const sleep = (ms: number) => {
 //   //   e.returnValue = '';
 //   // });
 // }
-
-
-
