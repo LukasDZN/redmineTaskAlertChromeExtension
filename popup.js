@@ -398,7 +398,7 @@ const initializeStorageLocalSettingsObject = async () => {
             osNotificationEnabled: false,
             newWindowEnabled: false,
             playASoundEnabled: false,
-            refreshIntervalInMinutes: 10,
+            refreshIntervalInMinutes: 5,
             domainName: 'https://redmine.tribepayments.com/',
         }));
         console.log('chrome.storage.sync initial settings value was set...');
