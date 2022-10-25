@@ -10,6 +10,9 @@
 // Set options
 var options = {searchable: true};
 
+// Google form for user analytics and error logging (also in background.ts)
+const googleFormUrl = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSeCG85Vno3ZbydBiJjwP6P-nYj-1ZElDBEznt7n4LK5cfJFag/formResponse'
+
 // Get HTML elements from the popup.html DOM
 var redmineTaskNumberDiv = document.getElementById("task_id_input") as HTMLInputElement;
 var fieldDiv = document.getElementById("field") as HTMLInputElement; // Casting — or more properly, type assertion
@@ -173,6 +176,24 @@ function initializeStorageLocalObject(callback = null) {
   });
 }
 
+const cyrb53 = (str, seed = 0) => {
+  /* 
+  * Hash function
+  */
+  let h1 = 0xdeadbeef ^ seed,
+    h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) {
+    ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+};
+
 function saveAlertToStorageLocal() {
   // chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
   //   chrome.tabs.sendMessage(tabs[0].id, new Object({'action': "parseRedmineTaskDropdownFieldsToArrayOfObjects"}), function(response) {
@@ -218,17 +239,17 @@ function saveAlertToStorageLocal() {
         chrome.tabs.sendMessage(tabs[0].id, new Object({'action': "getUserInitials"}), function(response) {
           response.data
 
-          fetch('https://docs.google.com/forms/u/0/d/e/1FAIpQLSeCG85Vno3ZbydBiJjwP6P-nYj-1ZElDBEznt7n4LK5cfJFag/formResponse', {
+          fetch(googleFormUrl, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded'
             },    
             body: new URLSearchParams({
               "entry.1257070925": newDateFormatted,  // timestamp
-              "entry.1232033723": response.data,  // user (readable)
-              "entry.1273942264": redmineTaskNumberDiv.value,  // task id
-              "entry.1822505748": fieldDiv.options[fieldDiv.selectedIndex].text,  // field name
-              "entry.1949912164": valueDiv.options[valueDiv.selectedIndex].text,  // field value
+              "entry.1232033723": cyrb53(response.data),  // hashed user name
+              "entry.1273942264": 'NA', // redmineTaskNumberDiv.value,  // task id
+              "entry.1822505748": 'NA', // fieldDiv.options[fieldDiv.selectedIndex].text,  // field name
+              "entry.1949912164": 'NA', // valueDiv.options[valueDiv.selectedIndex].text,  // field value
               "entry.879864049": settings,  // settings object      
             })
           });
@@ -238,7 +259,7 @@ function saveAlertToStorageLocal() {
       })
 
     } catch (e) {
-      console.log(e)
+      // console.log(e)
     }
   })
 }
