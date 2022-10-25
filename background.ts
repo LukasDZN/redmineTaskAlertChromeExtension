@@ -15,16 +15,13 @@ chrome.runtime.onStartup.addListener(function () {
 // initializeAlarm();
 
 async function initializeAlarm() {
-    const storageLocalObjects = await asyncGetStorageLocal(null);
-    const settingsObject =
-        storageLocalObjects.redmineTaskNotificationsExtensionSettings;
-    let alertCheckFrequencyInMinutes = 10;
+    const storageLocalObjects = await asyncGetStorageLocal(null)
+    const settingsObject = storageLocalObjects.redmineTaskNotificationsExtensionSettings
+    let alertCheckFrequencyInMinutes = 5
     if (settingsObject) {
         alertCheckFrequencyInMinutes = settingsObject.refreshIntervalInMinutes;
     }
-    console.log(
-        `Alarm set with a refresh interval of ${alertCheckFrequencyInMinutes}`
-    );
+    // console.log(`Alarm set with a refresh interval of ${alertCheckFrequencyInMinutes}`)
     // https://developer.chrome.com/docs/extensions/reference/alarms/#type-Alarm
     // "Chrome limits alarms to at most once every 1 minute"
     // To help you debug your app or extension, when you've loaded it unpacked, there's no limit to how often the alarm can fire.

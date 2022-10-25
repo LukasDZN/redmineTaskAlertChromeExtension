@@ -22,12 +22,10 @@
   ],
   "permissions": [
     "storage",
-    "notifications",
     "tabs",
     "activeTab",
     "alarms"
   ],
-  "host_permissions": ["*://*/*"],
   "background": {
     "service_worker": "background.js",
     "type": "module"

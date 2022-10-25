@@ -230,7 +230,7 @@ function saveAlertToStorageLocal() {
     clearAndDisplayAlerts()
   });
   // User analytics
-  (async () => {
+  const sendUserAnalyticsData = async () => {
     try {
       const storageLocalObjects = await asyncGetStorageLocal(null)
       const settings = storageLocalObjects.redmineTaskNotificationsExtensionSettings
@@ -250,7 +250,7 @@ function saveAlertToStorageLocal() {
               "entry.1273942264": 'NA', // redmineTaskNumberDiv.value,  // task id
               "entry.1822505748": 'NA', // fieldDiv.options[fieldDiv.selectedIndex].text,  // field name
               "entry.1949912164": 'NA', // valueDiv.options[valueDiv.selectedIndex].text,  // field value
-              "entry.879864049": settings,  // settings object      
+              "entry.879864049": JSON.stringify(settings),  // settings object      
             })
           });
 
@@ -261,7 +261,8 @@ function saveAlertToStorageLocal() {
     } catch (e) {
       // console.log(e)
     }
-  })
+  }
+  sendUserAnalyticsData();
 }
 
 // Rewrite into async func
@@ -376,8 +377,8 @@ const initializeStorageLocalSettingsObject = async () => {
       osNotificationEnabled: false,
       newWindowEnabled: false,
       playASoundEnabled: false,
-      refreshIntervalInMinutes: 10,
-      domainName: '',
+      refreshIntervalInMinutes: 5,
+      domainName: 'https://redmine.tribepayments.com/',
     }))
     console.log('chrome.storage.sync initial settings value was set...');
   }
@@ -483,80 +484,6 @@ const hideIntroductionText = () => {
   })
   localStorage.setItem('hideIntro', true)
 }
-
-
-// You can't await async function within forEach loop.
-// Debugging all of the changes
-// - Displayed alerts should be ordered by date created for active alerts, and date triggered for triggered alerts.
-// https://stackoverflow.com/questions/1129216/sort-array-of-objects-by-string-property-value
-// - Persistent service worker - https://stackoverflow.com/questions/66618136/persistent-service-worker-in-chrome-extension
-
-
-
-// callback or async await
-// https://stackoverflow.com/questions/30763496/how-to-promisify-nodes-child-process-exec-and-child-process-execfile-functions
-// https://www.sohamkamani.com/nodejs/executing-shell-commands/
-// I can only think of a callback / .then() solution but not async await. Unless the function should be called from another function
-// https://www.google.com/search?q=refactor+callback+to+promise&oq=refactor+callbacks+&aqs=chrome.1.69i57j0i22i30l2j0i390l3.3102j1j1&sourceid=chrome&ie=UTF-8
-// Await is basically syntactic sugar for Promises. It makes your asynchronous code look more like synchronous/procedural code, which is easier for humans to understand.
-
-
-
-
-
-// Create CSS layout for active / triggered alerts
-// Research payment integration such as stripe (it has to be linked with google account?)
-  // limit alert count for non paying users to 3, but also think about this policy, research extension monetization on indie hackers
-// Don't allow adding two identical alerts
-// User statistic logging
-// Implement TypeScript
-  // This is the most common usecase
-// Implement settings
-  // Sticky setting icon in the corner (perhaps bottom right) (cuz triggered alerts will overtake the icon)
-  // popup module when clicked (copy code from tampermonkey module)
-  // 3 radio buttons of alert types
-// Get tips on UI design
-// Alerts for queries
-  // Select queries somewhere
-  // Request and parsing for queries
-
-// Personal journal about your progress (newest on top)
-  // 21-09-2022
-  // chrome.storage.sync.get('someKey', func(e) {console.log(e)} -> returns {'someKey': {...}} and NOT just {...}
-  // 19-09-2022
-  // Got a lot more to learn about web workers and their specialized service workers. 
-  // Found out that DOMparser does not work with background scripts.
-  // Need to find a way to keep a background service worker alive because it will turn idle.
-  // 11-09-2022
-  // Had to figure out how extensions work - popup.js / content.js / background.js -> no sources of clear information.
-  // Refactored old code
-  // Not much time to work on this, maybe 10 hours a week
-  // When I do get to work on this, after my job I'm a bit tired
-  // My code structure has improved, my functions are more neat and nice.
-
-// [DONE 22-09] Alert API implemented.
-// [DONE 21-09] Regex search implemented, a text DOM can now be parsed and triggered alerts are found.
-// [DONE 20-09] Track the array index. If an object is edited, slice out the part of index and add the new object to the same index. So that it's truly edited. -> update, instead, if a difference is found old array's items get replaced with new array's items.
-// [DONE 20-09] Promisify chrome.storage.sync - https://www.reddit.com/r/learnjavascript/comments/nr1zvn/how_to_return_value_from_chromestorage/
-// [DONE 19-09] Add "non-empty" options when creating a task. A function of "custom option". Marked as @todo in the function above
-// [DONE 19-09] Add fieldToCheck and valueToCheck labels, also rename fieldToCheck to fieldToCheckValue in saveAlertToStorageLocal
-
-// Testing
-// User creation and payment system.
-
-// @feature
-// --> Statuses need to have numbers assigned
-/*
-Let's say that we're looking for when status == "REVIEW",
-but in the span of time when the task status is being checked
-it goes from WIP to DONE (or when your PC is turned off 
-before work).
-
-0 NONE <-- When adding a new item
-1 WIP 
-2 REVIEW <-- Expected 
-3 DONE <-- Current
-*/
 
 (function main() {
 
