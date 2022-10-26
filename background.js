@@ -50,7 +50,7 @@ async function initializeAlertCheckAlarm() {
 async function initializeUserAnalyticsAlarm() {
     // console.log('initializeUserAnalyticsAlarm ran')
     chrome.alarms.create('activeUserAnalytics', {
-        periodInMinutes: 2 // Debug mode
+        periodInMinutes: 3 // Debug mode
         // periodInMinutes: 60 * 2
     });
 }

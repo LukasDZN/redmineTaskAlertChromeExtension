@@ -557,8 +557,6 @@ const saveAlertToStorageLocal = async () => {
     fieldToCheckValue: fieldDiv.value,
     valueToCheckLabel: valueDiv.options[valueDiv.selectedIndex].text,
     valueToCheckValue: valueDiv.value,
-    // initialValue: ,
-    // initialLabel: ,
     triggeredInThePast: false,
     triggeredAtTimestamp: '',
     triggeredAtReadableDate: ''
@@ -568,14 +566,15 @@ const saveAlertToStorageLocal = async () => {
       let alertObjectArray = data.redmineTaskNotificationsExtension;
       alertObjectArray.push(alertObject);
       chrome.storage.sync.set({ redmineTaskNotificationsExtension: alertObjectArray }, async () => {
-        console.log('chrome.storage.sync new alert was created...');
+        // console.log('chrome.storage.sync new alert was created...');
       });
 
       // Set user hash
       try {
         const settings = data.redmineTaskNotificationsExtensionSettings;
         const userHash = settings.userHash;
-        if (userHash === 'Anonymous') {
+        if (userHash !== 'Anonymous') {
+          // console.log(`userHash !== 'Anonymous'`)
           return;
         }
         const userName = await sendMessageToContentScript('getUserInitials');
@@ -647,7 +646,7 @@ function clearChromeStorageSync() {
     chrome.storage.sync.clear(function () {
       initializeStorageLocalSettingsObject();
       initializeStorageLocalObject(clearAndDisplayAlerts);
-      console.log('chrome.storage.sync was cleared...');
+      // console.log('chrome.storage.sync was cleared...');
     });
   }
 }
@@ -713,7 +712,7 @@ function deleteSingleAlertFromStorageLocal(uniqueTimestampId) {
         if (object.uniqueTimestampId === uniqueTimestampId) {
           alertObjectArray.splice(index, 1);
           chrome.storage.sync.set({ redmineTaskNotificationsExtension: alertObjectArray }, function () {
-            console.log('chrome.storage.sync active alert was deleted...');
+            // console.log('chrome.storage.sync active alert was deleted...');
             clearAndDisplayAlerts();
           });
         }
@@ -754,7 +753,7 @@ const initializeStorageLocalSettingsObject = async () => {
         userHash: 'Anonymous'
       })
     );
-    console.log('chrome.storage.sync initial settings value was set...');
+    // console.log('chrome.storage.sync initial settings value was set...');
     demandToSetDomainSetting();
   }
 };
