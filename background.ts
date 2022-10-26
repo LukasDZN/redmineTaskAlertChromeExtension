@@ -14,6 +14,21 @@ chrome.runtime.onStartup.addListener(function () {
 // To test in the future if background.js doesn't wake up when needed:
 // initializeAlarm();
 
+function clearAllAlarmsAsync() {
+  return new Promise((resolve) => {
+    chrome.alarms.clearAll(resolve);
+  });
+}
+
+chrome.runtime.onMessage.addListener((request) => {
+  (async () => {
+    if (request === 'refreshAlarms') {
+      await clearAllAlarmsAsync();
+      initializeAlarm();
+    }
+  })();
+});
+
 async function initializeAlarm() {
   const storageLocalObjects = await asyncGetStorageLocal(null);
   const settingsObject = storageLocalObjects.redmineTaskNotificationsExtensionSettings;
@@ -21,17 +36,19 @@ async function initializeAlarm() {
   if (settingsObject) {
     alertCheckFrequencyInMinutes = settingsObject.refreshIntervalInMinutes;
   }
-  // console.log(`Alarm set with a refresh interval of ${alertCheckFrequencyInMinutes}`)
+  //   console.log(`Alarm set with a refresh interval of ${alertCheckFrequencyInMinutes}`);
   // https://developer.chrome.com/docs/extensions/reference/alarms/#type-Alarm
   // "Chrome limits alarms to at most once every 1 minute"
   // To help you debug your app or extension, when you've loaded it unpacked, there's no limit to how often the alarm can fire.
   chrome.alarms.create('mainFunction', {
     periodInMinutes: parseInt(alertCheckFrequencyInMinutes)
   });
-  chrome.alarms.onAlarm.addListener(() => {
-    main();
-  });
 }
+
+// A listener should only be added once
+chrome.alarms.onAlarm.addListener(() => {
+  main();
+});
 
 // Dev mode:
 // function initializeAlarm() {
@@ -41,10 +58,6 @@ async function initializeAlarm() {
 //         }
 //     })
 // }
-
-chrome.alarms.onAlarm.addListener(() => {
-  main();
-});
 
 const main = async () => {
   try {
@@ -114,7 +127,7 @@ const main = async () => {
                     }),
                     function (response) {
                       if (response) {
-                        console.log('background.js worker received a response from content.js...');
+                        // console.log('background.js worker received a response from content.js...');
                       }
                     }
                   );

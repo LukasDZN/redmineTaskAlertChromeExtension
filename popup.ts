@@ -531,6 +531,8 @@ const hideIntroductionText = () => {
   // Save settings
   saveSettingsButton?.addEventListener('click', () => {
     saveSettingsFromUiToStorageLocal()
+    // refresh the background.js alert check frequency interval
+    chrome.runtime.sendMessage('refreshAlarms')
     // close module on save
     closeActions()
   })
