@@ -92,10 +92,7 @@ const main = async () => {
           let redmineTaskTextDom = await sendRequestAndGetTextDom(alertObject.redmineTaskId);
           // console.log('value to check: ' + alertObject.valueToCheckValue)
           // console.log('value parsed from text dom: ' + getValueFromTextDom(redmineTaskTextDom, alertObject.fieldToCheckValue))
-          const parsedValue = getValueFromTextDom(
-            redmineTaskTextDom,
-            alertObject.fieldToCheckValue
-          );
+          const parsedValue = getValueFromTextDom(redmineTaskTextDom, alertObject.fieldToCheckValue);
           if (
             parsedValue === alertObject.valueToCheckValue ||
             (parsedValue !== '' && alertObject.valueToCheckValue === 'notEmpty')
@@ -170,7 +167,7 @@ const main = async () => {
       console.log('No active alerts were found, therefore none were checked...');
     }
   } catch (e) {
-    // sendErrorLog('Error in background.ts: ' + e);
+    sendErrorLog('Error in background.ts: ' + e);
   }
 };
 
@@ -235,11 +232,7 @@ function asyncSetStorageLocal(key, newValue) {
   });
 }
 
-const replaceObjectsInOriginalArrayWithOtherArrayObjects = (
-  initialArray,
-  replacementValueArray,
-  key
-) => {
+const replaceObjectsInOriginalArrayWithOtherArrayObjects = (initialArray, replacementValueArray, key) => {
   return initialArray.map((obj) => replacementValueArray.find((o) => o[key] === obj[key]) || obj);
 };
 

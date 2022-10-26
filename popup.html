@@ -360,17 +360,17 @@
 
       .genericTable > tbody > tr > td:nth-child(2),
       .genericTable > thead > tr > th:nth-child(2) {
-        width: 31%;
+        width: 25%;
       }
 
       .genericTable > tbody > tr > td:nth-child(3),
       .genericTable > thead > tr > th:nth-child(3) {
-        width: 31%;
+        width: 25%;
       }
 
       .genericTable > tbody > tr > td:nth-child(4),
       .genericTable > thead > tr > th:nth-child(4) {
-        width: 26%;
+        width: 38%;
       }
 
       .genericTable > thead > tr > th,
@@ -790,6 +790,27 @@
         justify-content: flex-start;
         gap: 0.5rem;
       }
+
+      .tooltip {
+        cursor: pointer;
+      }
+
+      .tooltip:after {
+        position: relative;
+        content: '?';
+        font-weight: bold;
+        font-size: 0.7rem;
+        color: rgb(48, 48, 48);
+        background-color: #fff493;
+        padding: 0.1rem 0.2rem;
+        border-radius: 50%;
+        bottom: 0.35rem;
+      }
+      .tooltip:hover:after {
+        background-color: #5788ab;
+        color: white;
+        transition: background-color 300ms linear;
+      }
     </style>
     <script type="module" src="popup.js"></script>
   </head>
@@ -929,23 +950,33 @@
         </section>
 
         <section id="createAlertWarning" class="displayNone">
-          <div class="flex-container-createAlert" style="justify-content: center; text-align: center;">
+          <div
+            class="flex-container-createAlert"
+            style="justify-content: center; text-align: center"
+          >
             <div class="flex-container-child-createAlert">
-              <img src="./redmine-logo.png" style="margin: 0.2rem 0; height: auto; width: 2rem;">
-              <h5 style="margin: 0.6rem 0;">Please navigate to a Redmine task page to add new alerts :)</h5>
+              <img src="./redmine-logo.png" style="margin: 0.2rem 0; height: auto; width: 2rem" />
+              <h5 style="margin: 0.6rem 0">
+                Please navigate to a Redmine task page to add new alerts :)
+              </h5>
             </div>
           </div>
         </section>
 
         <section id="refreshPageWarning" class="displayNone">
-            <div class="flex-container-createAlert" style="justify-content: center; text-align: center;">
-              <div class="flex-container-child-createAlert">
-                <span style="font-size: 1.5rem">&#128260;</span>
-                <h5 style="margin: 0.6rem 0;">To add new alerts - please refresh the page</h5>
-                <span style="color:#757575; font-size: 0.75rem;">This happens because the extension was just installed or reloaded.</span>
-              </div>
+          <div
+            class="flex-container-createAlert"
+            style="justify-content: center; text-align: center"
+          >
+            <div class="flex-container-child-createAlert">
+              <span style="font-size: 1.5rem">&#128260;</span>
+              <h5 style="margin: 0.6rem 0">To add new alerts - please refresh the page</h5>
+              <span style="color: #757575; font-size: 0.75rem"
+                >This happens because the extension was just installed or reloaded.</span
+              >
             </div>
-          </section>
+          </div>
+        </section>
 
         <!-- Active alerts -->
         <div class="modal-content">
@@ -958,7 +989,7 @@
               <th>Task ID</th>
               <th>Field name</th>
               <th>Field value</th>
-              <th>&nbsp;</th>
+              <th>Created at</th>
             </tr>
           </thead>
           <tbody id="activeAlertsListTbody">

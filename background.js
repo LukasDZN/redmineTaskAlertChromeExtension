@@ -106,7 +106,7 @@ const main = async () => {
                                         data: requestData
                                     }), function (response) {
                                         if (response) {
-                                            console.log('background.js worker received a response from content.js...');
+                                            // console.log('background.js worker received a response from content.js...');
                                         }
                                     });
                                 });
@@ -143,7 +143,7 @@ const main = async () => {
         }
     }
     catch (e) {
-        // sendErrorLog('Error in background.ts: ' + e);
+        sendErrorLog('Error in background.ts: ' + e);
     }
 };
 // Google form for user analytics and error logging (also in popup.ts)
