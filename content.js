@@ -7,10 +7,10 @@ function parseRedmineTaskDropdownFieldsToArrayOfObjects() {
             const id = taskFieldHtmlElement.id;
             let label = taskFieldHtmlElement.previousElementSibling.textContent;
             if (label) {
-                label = label?.replace(" *", "");
+                label = label?.replace(' *', '');
             }
             const selectedOptionValue = taskFieldHtmlElement.value;
-            const possibleOptionsValues = [...taskFieldHtmlElement].map(el => new Object({
+            const possibleOptionsValues = [...taskFieldHtmlElement].map((el) => new Object({
                 optionValue: el.value,
                 optionText: el.text,
                 isSelected: selectedOptionValue === el.value ? true : false
@@ -19,8 +19,8 @@ function parseRedmineTaskDropdownFieldsToArrayOfObjects() {
                 id: id,
                 label: label,
                 value: {
-                    type: "dropdown",
-                    options: possibleOptionsValues,
+                    type: 'dropdown',
+                    options: possibleOptionsValues
                 }
             };
             arrayOfDropdownObjects.push(optionObject);
@@ -43,13 +43,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
     else if (message.action === 'getUserInitials') {
         // Extracted from Redmine task page: "<div id="loggedas">Logged in as <a class="user active" href="/users/186">ld</a></div>""
-        const redmineUserInitials = document.querySelector("#loggedas > a.user.active").textContent;
-        sendResponse({
-            data: redmineUserInitials
-        });
+        const redmineUserInitials = document.querySelector('#loggedas > a.user.active').textContent;
+        sendResponse(redmineUserInitials);
     }
     else if (message.action === 'getActiveRedminePageTaskTitle') {
-        const redmineTaskTitle = document.querySelector("head > title").textContent;
+        const redmineTaskTitle = document.querySelector('head > title').textContent;
         sendResponse(redmineTaskTitle);
     }
     return true; // include 'true' otherwise it might close too early.

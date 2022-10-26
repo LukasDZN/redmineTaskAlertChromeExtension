@@ -4,32 +4,40 @@
 // These make sure that our function is run every time the browser is opened.
 chrome.runtime.onInstalled.addListener(function () {
   // called when you manually reload the extension within chrome://extensions, or when the extension calls chrome.runtime.reload()
-  initializeAlarm();
+  initializeAlertCheckAlarm();
+  initializeUserAnalyticsAlarm();
 });
 chrome.runtime.onStartup.addListener(function () {
   // only called when Chrome starts, not when the extension starts.
-  initializeAlarm();
+  initializeAlertCheckAlarm();
+  initializeUserAnalyticsAlarm();
 });
 
 // To test in the future if background.js doesn't wake up when needed:
-// initializeAlarm();
+// initializeAlertCheckAlarm();
 
-function clearAllAlarmsAsync() {
+const clearAllAlarmsAsync = () => {
   return new Promise((resolve) => {
     chrome.alarms.clearAll(resolve);
   });
-}
+};
+
+const clearAlarmAsync = (alarmName) => {
+  return new Promise((resolve) => {
+    chrome.alarms.clear(alarmName, resolve);
+  });
+};
 
 chrome.runtime.onMessage.addListener((request) => {
   (async () => {
     if (request === 'refreshAlarms') {
-      await clearAllAlarmsAsync();
-      initializeAlarm();
+      await clearAlarmAsync('checkForTriggeredAlerts');
+      initializeAlertCheckAlarm();
     }
   })();
 });
 
-async function initializeAlarm() {
+async function initializeAlertCheckAlarm() {
   const storageLocalObjects = await asyncGetStorageLocal(null);
   const settingsObject = storageLocalObjects.redmineTaskNotificationsExtensionSettings;
   let alertCheckFrequencyInMinutes = 5;
@@ -40,26 +48,45 @@ async function initializeAlarm() {
   // https://developer.chrome.com/docs/extensions/reference/alarms/#type-Alarm
   // "Chrome limits alarms to at most once every 1 minute"
   // To help you debug your app or extension, when you've loaded it unpacked, there's no limit to how often the alarm can fire.
-  chrome.alarms.create('mainFunction', {
+  chrome.alarms.create('checkForTriggeredAlerts', {
     periodInMinutes: parseInt(alertCheckFrequencyInMinutes)
   });
 }
 
-// A listener should only be added once
-chrome.alarms.onAlarm.addListener(() => {
-  main();
+async function initializeUserAnalyticsAlarm() {
+  // console.log('initializeUserAnalyticsAlarm ran')
+  chrome.alarms.create('activeUserAnalytics', {
+    periodInMinutes: 2 // Debug mode
+    // periodInMinutes: 60 * 2
+  });
+}
+
+// A listener should only be added once (not included in a function)
+chrome.alarms.onAlarm.addListener((alarmObject) => {
+  console.log(`Alarm triggered: ${alarmObject.name}`)
+  if (alarmObject.name === 'checkForTriggeredAlerts') {
+    checkForTriggeredAlerts();
+  }
+  if (alarmObject.name === 'activeUserAnalytics') {
+    sendWeeklyActiveUserData();
+  }
 });
 
 // Dev mode:
-// function initializeAlarm() {
-//     chrome.alarms.get('mainFunction', alarm => {
+// function initializeAlertCheckAlarm() {
+//     chrome.alarms.get('checkForTriggeredAlerts', alarm => {
 //         if (!alarm) {
-//             chrome.alarms.create('mainFunction', { periodInMinutes: 0.2 });
+//             chrome.alarms.create('checkForTriggeredAlerts', { periodInMinutes: 0.2 });
 //         }
 //     })
 // }
 
-const main = async () => {
+// View all alarms
+// chrome.alarms.getAll((alarms) => {
+//   console.log(alarms);
+// });
+
+const checkForTriggeredAlerts = async () => {
   try {
     const storageLocalObjects = await asyncGetStorageLocal(null);
 
@@ -158,9 +185,9 @@ const main = async () => {
           'uniqueTimestampId'
         );
         asyncSetStorageLocal('redmineTaskNotificationsExtension', updatedAlertObjectArray);
-        console.log('At least one alert was triggered during main() check...');
+        console.log('At least one alert was triggered during checkForTriggeredAlerts() check...');
       } else if (wasArrayUpdated === false) {
-        console.log('No alerts were triggered during main() check...');
+        console.log('No alerts were triggered during checkForTriggeredAlerts() check...');
       }
       await sleep(1 * 1000);
     } else {
@@ -183,12 +210,15 @@ const sendWeeklyActiveUserData = async () => {
     const alertsArray = storageLocalObjects.redmineTaskNotificationsExtension;
 
     if (settings === undefined) {
+      // console.log('sendWeeklyActiveUserData -> settings === undefined')
       return;
     }
     // const oneWeekInMiliseconds = 604800 * 1000;
     const oneWeekInMiliseconds = 60 * 1000; // Debug mode
     const oneWeekAgoTimestamp = new Date().getTime() - oneWeekInMiliseconds;
-    if (parseInt(settings.lastAnalyticsDataSendTimestamp) < oneWeekAgoTimestamp) {
+    // Continue only if the value is older than a week. Otherwise wait until a week has passed
+    if (parseInt(settings.lastAnalyticsDataSendTimestamp) > oneWeekAgoTimestamp) {
+      // console.log('sendWeeklyActiveUserData -> parseInt(settings.lastAnalyticsDataSendTimestamp) < oneWeekAgoTimestamp')
       return;
     }
 
@@ -233,6 +263,7 @@ const sendWeeklyActiveUserData = async () => {
     // Update the lastAnalyticsDataSendTimestamp by saving current date to the check interval
     settings.lastAnalyticsDataSendTimestamp = new Date().getTime();
     await asyncSetStorageLocal('redmineTaskNotificationsExtensionSettings', settings);
+    // console.log('sendWeeklyActiveUserData has ran');
   } catch (e) {
     // console.log('Error in sendWeeklyActiveUserData: ' + e)
   }

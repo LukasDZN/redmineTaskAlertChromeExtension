@@ -401,30 +401,35 @@ const textFieldValidator = (textInputElement, validator, buttonElement = null) =
 };
 
 const setRedmineTaskDropdownFields = async (initialElementCreation = false, callback = null) => {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    chrome.tabs.sendMessage(
-      tabs[0].id,
-      new Object({ action: 'parseRedmineTaskDropdownFieldsToArrayOfObjects' }),
-      function (response) {
-        if (!response) {
-          createAlertDiv.classList.add('displayNone');
-          refreshPageWarning.classList.remove('displayNone');
+  try {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        new Object({ action: 'parseRedmineTaskDropdownFieldsToArrayOfObjects' }),
+        function (response) {
+          if (!response) {
+            createAlertDiv.classList.add('displayNone');
+            refreshPageWarning.classList.remove('displayNone');
+            return;
+          }
+          response.data.forEach((fieldObject, index) => {
+            fieldDiv?.insertAdjacentHTML(
+              'beforeend',
+              `<option value="${fieldObject.id}" ${index === 0 ? 'selected' : ''}>${fieldObject.label}</option>`
+            );
+          });
+          if (callback) {
+            callback(initialElementCreation);
+          }
+          if (initialElementCreation === true) {
+            NiceSelect.bind(fieldDiv, options);
+          }
         }
-        response.data.forEach((fieldObject, index) => {
-          fieldDiv?.insertAdjacentHTML(
-            'beforeend',
-            `<option value="${fieldObject.id}" ${index === 0 ? 'selected' : ''}>${fieldObject.label}</option>`
-          );
-        });
-        if (callback) {
-          callback(initialElementCreation);
-        }
-        if (initialElementCreation === true) {
-          NiceSelect.bind(fieldDiv, options);
-        }
-      }
-    );
-  });
+      );
+    });
+  } catch (e) {
+    // console.log(e)
+  }
 };
 
 async function setRedmineTaskDropdownValues(initialElementCreation = false) {
@@ -484,6 +489,12 @@ const cyrb53 = (str, seed = 0) => {
   /*
    * Hash function
    */
+  if (!str) {
+    return 'Error';
+  }
+  if (str.length === 0) {
+    return 'Anonymous';
+  }
   let h1 = 0xdeadbeef ^ seed,
     h2 = 0x41c6ce57 ^ seed;
   for (let i = 0, ch; i < str.length; i++) {
@@ -512,9 +523,9 @@ const chromeTabsSendMessageAsync = (tabs, action) => {
 
 const sendMessageToContentScript = async (action) => {
   const tabs = await chromeTabsQueryAsync(true, true);
-  const activeRedminePageTaskTitle = await chromeTabsSendMessageAsync(tabs, action);
-  console.log(activeRedminePageTaskTitle);
-  return activeRedminePageTaskTitle;
+  const contentScriptResponse = await chromeTabsSendMessageAsync(tabs, action);
+  console.log(contentScriptResponse);
+  return contentScriptResponse;
 };
 
 const saveAlertToStorageLocal = async () => {
@@ -530,7 +541,7 @@ const saveAlertToStorageLocal = async () => {
     ':' +
     ('0' + d.getMinutes()).slice(-2);
 
-  let activeRedminePageTaskTitle = ''
+  let activeRedminePageTaskTitle = '';
   try {
     activeRedminePageTaskTitle = await sendMessageToContentScript('getActiveRedminePageTaskTitle');
   } catch (e) {
@@ -552,13 +563,28 @@ const saveAlertToStorageLocal = async () => {
     triggeredAtTimestamp: '',
     triggeredAtReadableDate: ''
   });
-  chrome.storage.sync.get(null, function (data) {
+  chrome.storage.sync.get(null, async (data) => {
     if (data.redmineTaskNotificationsExtension) {
       let alertObjectArray = data.redmineTaskNotificationsExtension;
       alertObjectArray.push(alertObject);
-      chrome.storage.sync.set({ redmineTaskNotificationsExtension: alertObjectArray }, function () {
+      chrome.storage.sync.set({ redmineTaskNotificationsExtension: alertObjectArray }, async () => {
         console.log('chrome.storage.sync new alert was created...');
       });
+
+      // Set user hash
+      try {
+        const settings = data.redmineTaskNotificationsExtensionSettings;
+        const userHash = settings.userHash;
+        if (userHash === 'Anonymous') {
+          return;
+        }
+        const userName = await sendMessageToContentScript('getUserInitials');
+        const newUserHash = cyrb53(userName);
+        settings.userHash = newUserHash;
+        asyncSetStorageLocal('redmineTaskNotificationsExtensionSettings', settings);
+      } catch (e) {
+        // console.log(e)
+      }
     }
     clearAndDisplayAlerts();
   });
@@ -722,7 +748,8 @@ const initializeStorageLocalSettingsObject = async () => {
         playASoundEnabled: false,
         refreshIntervalInMinutes: 5,
         domainName: 'https://redmine.tribepayments.com/',
-        lastAnalyticsDataSendTimestamp: new Date().getTime()
+        lastAnalyticsDataSendTimestamp: new Date().getTime(),
+        userHash: 'Anonymous'
       })
     );
     console.log('chrome.storage.sync initial settings value was set...');
@@ -802,7 +829,7 @@ function addMultipleEventListener(element, events, handler) {
   events.forEach((e) => element.addEventListener(e, handler));
 }
 
-const saveSettingsFromUiToStorageLocal = () => {
+const saveSettingsFromUiToStorageLocal = async () => {
   // Get values from storageLocal
   const storageLocalObjects = await asyncGetStorageLocal(null);
   const settings = storageLocalObjects.redmineTaskNotificationsExtensionSettings;
@@ -816,7 +843,8 @@ const saveSettingsFromUiToStorageLocal = () => {
     playASoundEnabled: false,
     refreshIntervalInMinutes: settingsRefreshIntervalInMinutes.value,
     domainName: settingsDomainName.value,
-    lastAnalyticsDataSendTimestamp: settings === undefined ? new Date().getTime() : settings.lastAnalyticsDataSendTimestamp
+    lastAnalyticsDataSendTimestamp:
+      settings === undefined ? new Date().getTime() : settings.lastAnalyticsDataSendTimestamp
   });
   asyncSetStorageLocal('redmineTaskNotificationsExtensionSettings', updatedSettingsObject);
 };
@@ -868,8 +896,8 @@ const hideIntroductionText = () => {
   addMultipleEventListener(settingsRefreshIntervalInMinutes, ['input'], settingsRefreshIntervalInMinutesValidation); // change is unneeded: ['input', 'change']
   settingsDomainName.addEventListener('input', () => settingsDomainNameValidation());
   // Save settings
-  saveSettingsButton?.addEventListener('click', () => {
-    saveSettingsFromUiToStorageLocal();
+  saveSettingsButton?.addEventListener('click', async () => {
+    await saveSettingsFromUiToStorageLocal();
     // refresh the background.js alert check frequency interval
     chrome.runtime.sendMessage('refreshAlarms');
     // close module on save
