@@ -171,9 +171,74 @@ const main = async () => {
   }
 };
 
-// Google form for user analytics and error logging (also in popup.ts)
 const googleFormUrl =
   'https://docs.google.com/forms/u/0/d/e/1FAIpQLSeCG85Vno3ZbydBiJjwP6P-nYj-1ZElDBEznt7n4LK5cfJFag/formResponse';
+
+// Send data about active users
+const sendWeeklyActiveUserData = async () => {
+  try {
+    let isUserActive = 'Error'; // User if active if they created at least 1 alert during the last week
+    const storageLocalObjects = await asyncGetStorageLocal(null);
+    const settings = storageLocalObjects.redmineTaskNotificationsExtensionSettings;
+    const alertsArray = storageLocalObjects.redmineTaskNotificationsExtension;
+
+    if (settings === undefined) {
+      return;
+    }
+    // const oneWeekInMiliseconds = 604800 * 1000;
+    const oneWeekInMiliseconds = 60 * 1000; // Debug mode
+    const oneWeekAgoTimestamp = new Date().getTime() - oneWeekInMiliseconds;
+    if (parseInt(settings.lastAnalyticsDataSendTimestamp) < oneWeekAgoTimestamp) {
+      return;
+    }
+
+    let weeklyCreatedAlertCount = 0;
+    let weeklyTriggeredAlertCount = 0;
+
+    alertsArray.forEach((object) => {
+      if (parseInt(object.uniqueTimestampId) > oneWeekAgoTimestamp) {
+        weeklyCreatedAlertCount++;
+      }
+      if (parseInt(object.triggeredAtTimestamp) > oneWeekAgoTimestamp) {
+        weeklyTriggeredAlertCount++;
+      }
+    });
+
+    if (weeklyCreatedAlertCount > 0) {
+      isUserActive = true;
+    } else {
+      isUserActive = false;
+    }
+
+    const userActivityDataObject = {
+      isUserActive: isUserActive,
+      weeklyCreatedAlertCount: weeklyCreatedAlertCount,
+      weeklyTriggeredAlertCount: weeklyTriggeredAlertCount,
+      userSettingsObject: settings
+    };
+    fetch(googleFormUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        'entry.1257070925': 'NA',
+        'entry.1232033723': 'NA',
+        'entry.1273942264': 'NA',
+        'entry.1822505748': 'NA',
+        'entry.1949912164': 'NA',
+        'entry.879864049': JSON.stringify(userActivityDataObject)
+      })
+    });
+    // Update the lastAnalyticsDataSendTimestamp by saving current date to the check interval
+    settings.lastAnalyticsDataSendTimestamp = new Date().getTime();
+    await asyncSetStorageLocal('redmineTaskNotificationsExtensionSettings', settings);
+  } catch (e) {
+    // console.log('Error in sendWeeklyActiveUserData: ' + e)
+  }
+};
+
+// Google form for user analytics and error logging (also in popup.ts [deprecated])
 const sendErrorLog = async (errorMessage) => {
   fetch(googleFormUrl, {
     method: 'POST',

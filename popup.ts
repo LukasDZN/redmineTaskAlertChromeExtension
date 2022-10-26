@@ -721,7 +721,8 @@ const initializeStorageLocalSettingsObject = async () => {
         newWindowEnabled: false,
         playASoundEnabled: false,
         refreshIntervalInMinutes: 5,
-        domainName: 'https://redmine.tribepayments.com/'
+        domainName: 'https://redmine.tribepayments.com/',
+        lastAnalyticsDataSendTimestamp: new Date().getTime()
       })
     );
     console.log('chrome.storage.sync initial settings value was set...');
@@ -802,6 +803,9 @@ function addMultipleEventListener(element, events, handler) {
 }
 
 const saveSettingsFromUiToStorageLocal = () => {
+  // Get values from storageLocal
+  const storageLocalObjects = await asyncGetStorageLocal(null);
+  const settings = storageLocalObjects.redmineTaskNotificationsExtensionSettings;
   // Get values from UI and build a new settings object
   let updatedSettingsObject = new Object({
     browserAlertEnabled: browserAlertEnabledSwitch.checked ? true : false,
@@ -811,7 +815,8 @@ const saveSettingsFromUiToStorageLocal = () => {
     // osNotificationEnabled: osNotificationEnabledSwitch.checked ? true : false,
     playASoundEnabled: false,
     refreshIntervalInMinutes: settingsRefreshIntervalInMinutes.value,
-    domainName: settingsDomainName.value
+    domainName: settingsDomainName.value,
+    lastAnalyticsDataSendTimestamp: settings === undefined ? new Date().getTime() : settings.lastAnalyticsDataSendTimestamp
   });
   asyncSetStorageLocal('redmineTaskNotificationsExtensionSettings', updatedSettingsObject);
 };
