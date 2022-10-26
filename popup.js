@@ -495,7 +495,7 @@ const chromeTabsSendMessageAsync = (tabs, action) => {
 const sendMessageToContentScript = async (action) => {
     const tabs = await chromeTabsQueryAsync(true, true);
     const contentScriptResponse = await chromeTabsSendMessageAsync(tabs, action);
-    console.log(contentScriptResponse);
+    // console.log(contentScriptResponse);
     return contentScriptResponse;
 };
 const saveAlertToStorageLocal = async () => {
@@ -548,7 +548,7 @@ const saveAlertToStorageLocal = async () => {
                 const userName = await sendMessageToContentScript('getUserInitials');
                 const newUserHash = cyrb53(userName);
                 settings.userHash = newUserHash;
-                asyncSetStorageLocal('redmineTaskNotificationsExtensionSettings', settings);
+                await asyncSetStorageLocal('redmineTaskNotificationsExtensionSettings', settings);
             }
             catch (e) {
                 // console.log(e)
@@ -611,6 +611,8 @@ function clearChromeStorageSync() {
 }
 function clearAndDisplayAlerts() {
     chrome.storage.sync.get(null, function (data) {
+        const settings = data.redmineTaskNotificationsExtensionSettings;
+        const domainName = settings.domainName;
         if (data.redmineTaskNotificationsExtension) {
             activeAlertsListTbody.innerHTML = '';
             triggeredAlertsListTbody.innerHTML = '';
@@ -618,7 +620,7 @@ function clearAndDisplayAlerts() {
                 if (object.triggeredInThePast === false) {
                     activeAlertsListTbody?.insertAdjacentHTML('beforeend', `
               <tr id="trId${object.uniqueTimestampId}">
-                <td class="tooltip" title="${object.redmineTaskTitle}">${object.redmineTaskId}</td>
+                <td class="tooltip" title="${object.redmineTaskTitle}"><a target="_blank" href="${domainName}issues/${object.redmineTaskId}">${object.redmineTaskId}</a></td>
                 <td>${object.fieldToCheckLabel}</td>
                 <td>${object.valueToCheckLabel}</td>
                 <td style="display: flex; justify-content: space-between; width: calc(100% - 2rem);">
@@ -641,7 +643,7 @@ function clearAndDisplayAlerts() {
                 else if (object.triggeredInThePast === true) {
                     triggeredAlertsListTbody?.insertAdjacentHTML('beforeend', `
               <tr>
-                <td class="tooltip" title="${object.redmineTaskTitle}">${object.redmineTaskId}</td>
+                <td class="tooltip" title="${object.redmineTaskTitle}"><a target="_blank" href="${domainName}issues/${object.redmineTaskId}">${object.redmineTaskId}</a></td>
                 <td>${object.fieldToCheckLabel}</td>
                 <td>${object.valueToCheckLabel}</td>
                 <td class="tooltip" title="Created at: ${object.itemAddedOnReadableDate}">${object.triggeredAtReadableDate}</td>
