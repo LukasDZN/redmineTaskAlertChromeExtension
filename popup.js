@@ -693,7 +693,7 @@ const initializeStorageLocalSettingsObject = async () => {
             newWindowEnabled: false,
             playASoundEnabled: false,
             refreshIntervalInMinutes: 5,
-            domainName: 'https://redmine.tribepayments.com/',
+            domainName: '',
             lastAnalyticsDataSendTimestamp: new Date().getTime(),
             userHash: 'Anonymous'
         }));
@@ -706,14 +706,17 @@ const closeActions = () => {
     closeSettingsSpan.style.display = 'none';
     extensionContent.classList.remove('blackOpaque', 'hideScrollbar');
 };
+const openActions = () => {
+    clearAndDisplaySettings();
+    settingsModal.style.display = 'block';
+    openSettingsIcon.style.display = 'none';
+    closeSettingsSpan.style.display = 'block';
+    extensionContent.classList.add('blackOpaque', 'hideScrollbar');
+};
 const settingModalDisplay = async () => {
     // When the user clicks the button, open the settingModal
     openSettingsIcon?.addEventListener('click', function () {
-        clearAndDisplaySettings();
-        settingsModal.style.display = 'block';
-        openSettingsIcon.style.display = 'none';
-        closeSettingsSpan.style.display = 'block';
-        extensionContent.classList.add('blackOpaque', 'hideScrollbar');
+        openActions();
     });
     // When the user clicks on <span> (x), close the settingModal
     closeSettingsSpan?.addEventListener('click', function () {
@@ -794,7 +797,40 @@ const hideIntroductionText = () => {
     });
     localStorage.setItem('hideIntro', true);
 };
-(function main() {
+const demandToSetDomainSetting = async () => {
+    // Check if domain name is configured -> if configured, return
+    const storageLocalObjects = await asyncGetStorageLocal(null);
+    const settingsObject = storageLocalObjects.redmineTaskNotificationsExtensionSettings;
+    if (!settingsObject) {
+        return;
+    }
+    if (settingsObject.domainName !== '') {
+        return;
+    }
+    // If not configured, send request to redmine.tribepayments
+    try {
+        const redmineResponse = await fetch(`https://redmine.tribepayments.com/`, {
+            method: 'GET',
+            headers: {},
+            body: null
+        });
+        if (redmineResponse.status === 201) {
+            settingsObject.domainName = 'https://redmine.tribepayments.com/';
+            await asyncSetStorageLocal('redmineTaskNotificationsExtensionSettings', settingsObject);
+            return;
+        }
+        else {
+            // If not available - open settings and highlight domain field
+            openActions();
+        }
+    }
+    catch (e) {
+        // console.log(e)
+    }
+    // Note:
+    // Add a URL example
+};
+const main = (async () => {
     // Remove chrome extension notification badge
     chrome.action.setBadgeText({ text: '' });
     // Check if user is on a Redmine page, if yes, prefill extension fields
@@ -808,7 +844,8 @@ const hideIntroductionText = () => {
     });
     // Initialize values for new users (or after clearing storage.local)
     initializeStorageLocalObject();
-    initializeStorageLocalSettingsObject();
+    await initializeStorageLocalSettingsObject();
+    demandToSetDomainSetting();
     // Display alerts
     clearAndDisplayAlerts();
     // Save alerts
