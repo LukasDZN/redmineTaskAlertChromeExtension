@@ -103,6 +103,9 @@ var triggeredAlertsListTbody = document.getElementById("triggeredAlertsListTbody
 var addButton = document.getElementById("addButton");
 var clearButton = document.getElementById("clearButton");
 var version = document.getElementById("version");
+// Warnings
+var refreshPageWarning = document.getElementById("refreshPageWarning");
+var createAlertWarning = document.getElementById("createAlertWarning");
 var valueDivInstance; // prettifier object for value dropdown
 // Settings module
 var openSettingsIcon = document.getElementById("openSettingsIcon");
@@ -179,9 +182,13 @@ const textFieldValidator = (textInputElement, validator, buttonElement = null) =
         }
     }
 };
-async function setRedmineTaskDropdownFields(initialElementCreation = false, callback = null) {
+const setRedmineTaskDropdownFields = async (initialElementCreation = false, callback = null) => {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, new Object({ 'action': "parseRedmineTaskDropdownFieldsToArrayOfObjects" }), function (response) {
+            if (!response) {
+                createAlertDiv.classList.add("displayNone");
+                refreshPageWarning.classList.remove("displayNone");
+            }
             response.data.forEach((fieldObject, index) => {
                 fieldDiv?.insertAdjacentHTML("beforeend", `<option value="${fieldObject.id}" ${index === 0 ? "selected" : ""}>${fieldObject.label}</option>`);
             });
@@ -193,7 +200,7 @@ async function setRedmineTaskDropdownFields(initialElementCreation = false, call
             }
         });
     });
-}
+};
 async function setRedmineTaskDropdownValues(initialElementCreation = false) {
     const selectedFieldId = fieldDiv.value;
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -284,35 +291,34 @@ function saveAlertToStorageLocal() {
         clearAndDisplayAlerts();
     });
     // User analytics
-    const sendUserAnalyticsData = async () => {
-        try {
-            const storageLocalObjects = await asyncGetStorageLocal(null);
-            const settings = storageLocalObjects.redmineTaskNotificationsExtensionSettings;
-            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                chrome.tabs.sendMessage(tabs[0].id, new Object({ 'action': "getUserInitials" }), function (response) {
-                    response.data;
-                    fetch(googleFormUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: new URLSearchParams({
-                            "entry.1257070925": newDateFormatted,
-                            "entry.1232033723": cyrb53(response.data),
-                            "entry.1273942264": 'NA',
-                            "entry.1822505748": 'NA',
-                            "entry.1949912164": 'NA',
-                            "entry.879864049": JSON.stringify(settings), // settings object      
-                        })
-                    });
-                });
-            });
-        }
-        catch (e) {
-            // console.log(e)
-        }
-    };
-    sendUserAnalyticsData();
+    // const sendUserAnalyticsData = async () => {
+    //   try {
+    //     const storageLocalObjects = await asyncGetStorageLocal(null)
+    //     const settings = storageLocalObjects.redmineTaskNotificationsExtensionSettings
+    //     chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+    //       chrome.tabs.sendMessage(tabs[0].id, new Object({'action': "getUserInitials"}), function(response) {
+    //         response.data
+    //         fetch(googleFormUrl, {
+    //           method: 'POST',
+    //           headers: {
+    //             'Content-Type': 'application/x-www-form-urlencoded'
+    //           },    
+    //           body: new URLSearchParams({
+    //             "entry.1257070925": newDateFormatted,  // timestamp
+    //             "entry.1232033723": cyrb53(response.data),  // hashed user name
+    //             "entry.1273942264": 'NA', // redmineTaskNumberDiv.value,  // task id
+    //             "entry.1822505748": 'NA', // fieldDiv.options[fieldDiv.selectedIndex].text,  // field name
+    //             "entry.1949912164": 'NA', // valueDiv.options[valueDiv.selectedIndex].text,  // field value
+    //             "entry.879864049": JSON.stringify(settings),  // settings object      
+    //           })
+    //         });
+    //       });
+    //     })
+    //   } catch (e) {
+    //     // console.log(e)
+    //   }
+    // }
+    // sendUserAnalyticsData();
 }
 // Rewrite into async func
 // const asyncQueryContentScript = (action) => {

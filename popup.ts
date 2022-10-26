@@ -23,6 +23,9 @@ var triggeredAlertsListTbody = document.getElementById("triggeredAlertsListTbody
 var addButton = document.getElementById("addButton") as HTMLButtonElement;
 var clearButton = document.getElementById("clearButton") as HTMLButtonElement;
 var version = document.getElementById("version") as HTMLButtonElement;
+// Warnings
+var refreshPageWarning = document.getElementById("refreshPageWarning") as HTMLButtonElement;
+var createAlertWarning = document.getElementById("createAlertWarning") as HTMLButtonElement;
 
 var valueDivInstance; // prettifier object for value dropdown
 
@@ -108,9 +111,13 @@ const textFieldValidator = (textInputElement, validator, buttonElement = null) =
   }
 }
 
-async function setRedmineTaskDropdownFields(initialElementCreation = false, callback = null) {
+const setRedmineTaskDropdownFields = async (initialElementCreation = false, callback = null) => {
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
     chrome.tabs.sendMessage(tabs[0].id, new Object({'action': "parseRedmineTaskDropdownFieldsToArrayOfObjects"}), function(response) {
+      if (!response) {
+        createAlertDiv.classList.add("displayNone");
+        refreshPageWarning.classList.remove("displayNone");
+      }
       response.data.forEach((fieldObject, index) => {
         fieldDiv?.insertAdjacentHTML(
           "beforeend",
@@ -230,39 +237,39 @@ function saveAlertToStorageLocal() {
     clearAndDisplayAlerts()
   });
   // User analytics
-  const sendUserAnalyticsData = async () => {
-    try {
-      const storageLocalObjects = await asyncGetStorageLocal(null)
-      const settings = storageLocalObjects.redmineTaskNotificationsExtensionSettings
+  // const sendUserAnalyticsData = async () => {
+  //   try {
+  //     const storageLocalObjects = await asyncGetStorageLocal(null)
+  //     const settings = storageLocalObjects.redmineTaskNotificationsExtensionSettings
 
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-        chrome.tabs.sendMessage(tabs[0].id, new Object({'action': "getUserInitials"}), function(response) {
-          response.data
+  //     chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+  //       chrome.tabs.sendMessage(tabs[0].id, new Object({'action': "getUserInitials"}), function(response) {
+  //         response.data
 
-          fetch(googleFormUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            },    
-            body: new URLSearchParams({
-              "entry.1257070925": newDateFormatted,  // timestamp
-              "entry.1232033723": cyrb53(response.data),  // hashed user name
-              "entry.1273942264": 'NA', // redmineTaskNumberDiv.value,  // task id
-              "entry.1822505748": 'NA', // fieldDiv.options[fieldDiv.selectedIndex].text,  // field name
-              "entry.1949912164": 'NA', // valueDiv.options[valueDiv.selectedIndex].text,  // field value
-              "entry.879864049": JSON.stringify(settings),  // settings object      
-            })
-          });
+  //         fetch(googleFormUrl, {
+  //           method: 'POST',
+  //           headers: {
+  //             'Content-Type': 'application/x-www-form-urlencoded'
+  //           },    
+  //           body: new URLSearchParams({
+  //             "entry.1257070925": newDateFormatted,  // timestamp
+  //             "entry.1232033723": cyrb53(response.data),  // hashed user name
+  //             "entry.1273942264": 'NA', // redmineTaskNumberDiv.value,  // task id
+  //             "entry.1822505748": 'NA', // fieldDiv.options[fieldDiv.selectedIndex].text,  // field name
+  //             "entry.1949912164": 'NA', // valueDiv.options[valueDiv.selectedIndex].text,  // field value
+  //             "entry.879864049": JSON.stringify(settings),  // settings object      
+  //           })
+  //         });
 
-        });
+  //       });
 
-      })
+  //     })
 
-    } catch (e) {
-      // console.log(e)
-    }
-  }
-  sendUserAnalyticsData();
+  //   } catch (e) {
+  //     // console.log(e)
+  //   }
+  // }
+  // sendUserAnalyticsData();
 }
 
 // Rewrite into async func
