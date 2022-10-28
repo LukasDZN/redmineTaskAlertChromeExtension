@@ -535,6 +535,7 @@ const saveAlertToStorageLocal = async () => {
             alertObjectArray.push(alertObject);
             chrome.storage.sync.set({ redmineTaskNotificationsExtension: alertObjectArray }, async () => {
                 // console.log('chrome.storage.sync new alert was created...');
+                clearAndDisplayAlerts();
             });
             // Set user hash
             try {
@@ -553,7 +554,6 @@ const saveAlertToStorageLocal = async () => {
                 // console.log(e)
             }
         }
-        clearAndDisplayAlerts();
     });
 };
 // User analytics
@@ -608,16 +608,16 @@ function clearChromeStorageSync() {
         });
     }
 }
-function clearAndDisplayAlerts() {
-    chrome.storage.sync.get(null, function (data) {
-        const settings = data.redmineTaskNotificationsExtensionSettings;
-        const domainName = settings.domainName;
-        if (data.redmineTaskNotificationsExtension) {
-            activeAlertsListTbody.innerHTML = '';
-            triggeredAlertsListTbody.innerHTML = '';
-            data.redmineTaskNotificationsExtension.forEach((object) => {
-                if (object.triggeredInThePast === false) {
-                    activeAlertsListTbody?.insertAdjacentHTML('beforeend', `
+const clearAndDisplayAlerts = async () => {
+    const storageLocalObjects = await asyncGetStorageLocal(null);
+    const settings = storageLocalObjects.redmineTaskNotificationsExtensionSettings;
+    const domainName = settings.domainName;
+    if (storageLocalObjects.redmineTaskNotificationsExtension) {
+        activeAlertsListTbody.innerHTML = '';
+        triggeredAlertsListTbody.innerHTML = '';
+        storageLocalObjects.redmineTaskNotificationsExtension.forEach((object) => {
+            if (object.triggeredInThePast === false) {
+                activeAlertsListTbody?.insertAdjacentHTML('beforeend', `
               <tr id="trId${object.uniqueTimestampId}">
                 <td class="tooltip" title="${object.redmineTaskTitle}"><a target="_blank" href="${domainName}issues/${object.redmineTaskId}">${object.redmineTaskId}</a></td>
                 <td>${object.fieldToCheckLabel}</td>
@@ -630,17 +630,17 @@ function clearAndDisplayAlerts() {
                 </td>
               </tr>
             `);
-                    let deleteButton = document.getElementById(`activeAlertDelete${object.uniqueTimestampId}`);
-                    let deleteTr = document.getElementById(`trId${object.uniqueTimestampId}`);
-                    deleteButton.addEventListener('click', function () {
-                        deleteTr.classList.add('opacityZero');
-                        deleteTr.addEventListener('transitionend', () => {
-                            deleteSingleAlertFromStorageLocal(object.uniqueTimestampId);
-                        });
+                let deleteButton = document.getElementById(`activeAlertDelete${object.uniqueTimestampId}`);
+                let deleteTr = document.getElementById(`trId${object.uniqueTimestampId}`);
+                deleteButton.addEventListener('click', function () {
+                    deleteTr.classList.add('opacityZero');
+                    deleteTr.addEventListener('transitionend', () => {
+                        deleteSingleAlertFromStorageLocal(object.uniqueTimestampId);
                     });
-                }
-                else if (object.triggeredInThePast === true) {
-                    triggeredAlertsListTbody?.insertAdjacentHTML('beforeend', `
+                });
+            }
+            else if (object.triggeredInThePast === true) {
+                triggeredAlertsListTbody?.insertAdjacentHTML('beforeend', `
               <tr>
                 <td class="tooltip" title="${object.redmineTaskTitle}"><a target="_blank" href="${domainName}issues/${object.redmineTaskId}">${object.redmineTaskId}</a></td>
                 <td>${object.fieldToCheckLabel}</td>
@@ -648,11 +648,10 @@ function clearAndDisplayAlerts() {
                 <td class="tooltip" title="Created at: ${object.itemAddedOnReadableDate}">${object.triggeredAtReadableDate}</td>
               </tr>
             `);
-                }
-            });
-        }
-    });
-}
+            }
+        });
+    }
+};
 function deleteSingleAlertFromStorageLocal(uniqueTimestampId) {
     chrome.storage.sync.get(null, function (data) {
         if (data.redmineTaskNotificationsExtension) {

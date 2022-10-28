@@ -400,9 +400,16 @@
         background-color: #f1f1f1;
       }
 
-      label {
+      label.switch {
         padding-right: 0.3rem;
         padding-bottom: 0.25rem;
+        font-size: 0.9rem;
+        font-weight: bold;
+      }
+
+      label > .flex-container-createAlert {
+        margin-left: 0.1rem;
+        line-height: 1.5rem;
         font-size: 0.9rem;
         font-weight: bold;
       }
@@ -465,20 +472,21 @@
       /* Add alert */
 
       #addButton {
-        background-color: rgb(67 174 102);
+        background-color: rgb(35, 180, 83);
         color: rgb(255, 255, 255);
         font-size: 0.8rem;
         font-weight: bold;
-        margin: 1.4rem 0.6rem 0 0;
+        margin: 1.8rem 0.6rem 0 0;
         padding: 0.25rem 0.6rem;
+        border: none;
       }
 
       #addButton:hover {
-        background-color: rgb(54, 146, 85);
+        background-color: rgb(74, 224, 124);
       }
 
       #addButton:active {
-        background-color: rgb(31, 109, 57);
+        background-color: rgb(107, 255, 157);
       }
 
       /* Delete active alert */
@@ -510,6 +518,7 @@
       #saveSettingsButton {
         background-color: rgb(58 180 99);
         padding: 0.2rem 0.5rem;
+        border: none;
       }
 
       #saveSettingsButton:hover {
@@ -755,7 +764,7 @@
         content: '';
         height: 26px;
         width: 26px;
-        left: 4px;
+        left: 8px;
         bottom: 6px;
         background-color: white;
         -webkit-transition: 0.4s;
