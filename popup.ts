@@ -338,12 +338,16 @@ var settingsDomainName = document.getElementById('domainName') as HTMLButtonElem
 var saveSettingsButton = document.getElementById('saveSettingsButton') as HTMLButtonElement;
 
 function removeCreateAlertAndAddWarningWhenUserNotInRedmineTaskPage(callback1, callback2) {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    const isCurrentTabARedminePage = /https:\/\/redmine\.tribepayments\.com\/issues\/.+/.test(tabs[0].url);
-    if (isCurrentTabARedminePage === false) {
+  chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+    const storageLocalObjects = await asyncGetStorageLocal(null);
+    const settings = storageLocalObjects.redmineTaskNotificationsExtensionSettings;
+    const domainName = settings.domainName;
+    const regExp = new RegExp(`${domainName}issues/.+`)
+    const isCurrentTabARedminePage = regExp.test(tabs[0].url);
+    if (!isCurrentTabARedminePage) {
       createAlertDiv.classList.add('displayNone');
       createAlertWarning.classList.remove('displayNone');
-    } else if (isCurrentTabARedminePage === true) {
+    } else if (isCurrentTabARedminePage) {
       if (callback1) {
         callback1(redmineTaskNumberDiv);
       }
@@ -509,7 +513,7 @@ const cyrb53 = (str, seed = 0) => {
   return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 };
 
-const chromeTabsQueryAsync = (isActive, isCurrentWindow) => {
+const chromeTabsQueryAsync = (isActive = true, isCurrentWindow = true) => {
   return new Promise((resolve) => {
     chrome.tabs.query({ active: isActive, currentWindow: isCurrentWindow }, resolve);
   });
@@ -522,7 +526,7 @@ const chromeTabsSendMessageAsync = (tabs, action) => {
 };
 
 const sendMessageToContentScript = async (action) => {
-  const tabs = await chromeTabsQueryAsync(true, true);
+  const tabs = await chromeTabsQueryAsync();
   const contentScriptResponse = await chromeTabsSendMessageAsync(tabs, action);
   // console.log(contentScriptResponse);
   return contentScriptResponse;
