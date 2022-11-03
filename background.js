@@ -102,7 +102,7 @@ const checkForTriggeredAlerts = async () => {
             for (const alertObject of alertObjectArray) {
                 if (alertObject.triggeredInThePast === false) {
                     // console.log('found an active alert')
-                    let redmineTaskTextDom = await sendRequestAndGetTextDom(alertObject.redmineTaskId);
+                    let redmineTaskTextDom = await sendRequestAndGetTextDom(redmineIssueUrl, alertObject.redmineTaskId);
                     // console.log('value to check: ' + alertObject.valueToCheckValue)
                     // console.log('value parsed from text dom: ' + getValueFromTextDom(redmineTaskTextDom, alertObject.fieldToCheckValue))
                     const parsedValue = getValueFromTextDom(redmineTaskTextDom, alertObject.fieldToCheckValue);
@@ -252,9 +252,9 @@ const sendErrorLog = async (errorMessage) => {
         })
     });
 };
-const sendRequestAndGetTextDom = async (taskId) => {
+const sendRequestAndGetTextDom = async (domainName, taskId) => {
     try {
-        const redmineResponse = await fetch(`https://redmine.tribepayments.com/issues/${taskId}`, {
+        const redmineResponse = await fetch(`${domainName}${taskId}`, {
             method: 'GET',
             headers: {},
             body: null
