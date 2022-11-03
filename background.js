@@ -92,10 +92,7 @@ const checkForTriggeredAlerts = async () => {
             ('0' + d.getMinutes()).slice(-2);
         let alertObjectArray = storageLocalObjects.redmineTaskNotificationsExtension;
         const extensionSettingsObject = storageLocalObjects.redmineTaskNotificationsExtensionSettings;
-        let domainName = extensionSettingsObject.domainName.trim();
-        if (domainName.endsWith('/')) {
-            domainName = domainName.slice(0, -1);
-        }
+        const domainName = extensionSettingsObject.domainName;
         const redmineIssueUrl = `${domainName}/issues/`;
         if (!!alertObjectArray.length) {
             let editedObjectsOfAlertObjectArray = [];

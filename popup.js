@@ -340,7 +340,7 @@ function removeCreateAlertAndAddWarningWhenUserNotInRedmineTaskPage(callback1, c
         const storageLocalObjects = await asyncGetStorageLocal(null);
         const settings = storageLocalObjects.redmineTaskNotificationsExtensionSettings;
         const domainName = settings.domainName;
-        const regExp = new RegExp(`${domainName}issues/.+`);
+        const regExp = new RegExp(`${domainName}/issues/.+`);
         const isCurrentTabARedminePage = regExp.test(tabs[0].url);
         if (!isCurrentTabARedminePage) {
             createAlertDiv.classList.add('displayNone');
@@ -623,7 +623,7 @@ const clearAndDisplayAlerts = async () => {
             if (object.triggeredInThePast === false) {
                 activeAlertsListTbody?.insertAdjacentHTML('beforeend', `
               <tr id="trId${object.uniqueTimestampId}">
-                <td class="tooltip" title="${object.redmineTaskTitle}"><a target="_blank" href="${domainName}issues/${object.redmineTaskId}">${object.redmineTaskId}</a></td>
+                <td class="tooltip" title="${object.redmineTaskTitle}"><a target="_blank" href="${domainName}/issues/${object.redmineTaskId}">${object.redmineTaskId}</a></td>
                 <td>${object.fieldToCheckLabel}</td>
                 <td>${object.valueToCheckLabel}</td>
                 <td style="display: flex; justify-content: space-between; width: calc(100% - 2rem);">
@@ -646,7 +646,7 @@ const clearAndDisplayAlerts = async () => {
             else if (object.triggeredInThePast === true) {
                 triggeredAlertsListTbody?.insertAdjacentHTML('beforeend', `
               <tr>
-                <td class="tooltip" title="${object.redmineTaskTitle}"><a target="_blank" href="${domainName}issues/${object.redmineTaskId}">${object.redmineTaskId}</a></td>
+                <td class="tooltip" title="${object.redmineTaskTitle}"><a target="_blank" href="${domainName}/issues/${object.redmineTaskId}">${object.redmineTaskId}</a></td>
                 <td>${object.fieldToCheckLabel}</td>
                 <td>${object.valueToCheckLabel}</td>
                 <td class="tooltip" title="Created at: ${object.itemAddedOnReadableDate}">${object.triggeredAtReadableDate}</td>
@@ -776,6 +776,10 @@ const saveSettingsFromUiToStorageLocal = async () => {
     // Get values from storageLocal
     const storageLocalObjects = await asyncGetStorageLocal(null);
     const settings = storageLocalObjects.redmineTaskNotificationsExtensionSettings;
+    let domainName = settingsDomainName.value.trim();
+    if (domainName.endsWith('/')) {
+        domainName = domainName.slice(0, -1);
+    }
     // Get values from UI and build a new settings object
     let updatedSettingsObject = new Object({
         browserAlertEnabled: browserAlertEnabledSwitch.checked ? true : false,
@@ -785,7 +789,7 @@ const saveSettingsFromUiToStorageLocal = async () => {
         // osNotificationEnabled: osNotificationEnabledSwitch.checked ? true : false,
         playASoundEnabled: false,
         refreshIntervalInMinutes: settingsRefreshIntervalInMinutes.value,
-        domainName: settingsDomainName.value,
+        domainName: domainName,
         lastAnalyticsDataSendTimestamp: settings === undefined ? new Date().getTime() : settings.lastAnalyticsDataSendTimestamp
     });
     asyncSetStorageLocal('redmineTaskNotificationsExtensionSettings', updatedSettingsObject);
@@ -812,13 +816,13 @@ const demandToSetDomainSetting = async () => {
     }
     // If not configured, send request to redmine.tribepayments
     try {
-        const redmineResponse = await fetch(`https://redmine.tribepayments.com/`, {
+        const redmineResponse = await fetch(`https://redmine.tribepayments.com`, {
             method: 'GET',
             headers: {},
             body: null
         });
         if (redmineResponse.status === 200) {
-            settingsObject.domainName = 'https://redmine.tribepayments.com/';
+            settingsObject.domainName = 'https://redmine.tribepayments.com';
             await asyncSetStorageLocal('redmineTaskNotificationsExtensionSettings', settingsObject);
             return;
         }
