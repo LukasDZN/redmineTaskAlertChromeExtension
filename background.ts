@@ -213,8 +213,8 @@ const sendWeeklyActiveUserData = async () => {
       // console.log('sendWeeklyActiveUserData -> settings === undefined')
       return;
     }
-    // const oneWeekInMiliseconds = 604800 * 1000;
-    const oneWeekInMiliseconds = 60 * 1000; // Debug mode
+    const oneWeekInMiliseconds = 604800 * 1000;
+    // const oneWeekInMiliseconds = 60 * 1000; // Debug mode
     const oneWeekAgoTimestamp = new Date().getTime() - oneWeekInMiliseconds;
     // Continue only if the value is older than a week. Otherwise wait until a week has passed
     if (parseInt(settings.lastAnalyticsDataSendTimestamp) > oneWeekAgoTimestamp) {
