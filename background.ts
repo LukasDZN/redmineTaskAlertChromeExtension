@@ -114,12 +114,12 @@ const checkForTriggeredAlerts = async () => {
         if (alertObject.triggeredInThePast === false) {
           // console.log('found an active alert')
           let redmineTaskTextDom = await sendRequestAndGetTextDom(redmineIssueUrl, alertObject.redmineTaskId);
-          // console.log('value to check: ' + alertObject.valueToCheckValue)
-          // console.log('value parsed from text dom: ' + getValueFromTextDom(redmineTaskTextDom, alertObject.fieldToCheckValue))
           const parsedValue = getValueFromTextDom(redmineTaskTextDom, alertObject.fieldToCheckValue);
+        //   console.log('value to check: ' + alertObject.valueToCheckValue)
+        //   console.log('value parsed from text dom: ' + parsedValue)
           if (
             parsedValue === alertObject.valueToCheckValue ||
-            (parsedValue !== '' && alertObject.valueToCheckValue === 'notEmpty')
+            ((parsedValue !== '' && parsedValue !== '-' && parsedValue !== ' ') && alertObject.valueToCheckValue === 'notEmpty')
           ) {
             if (wasArrayUpdated === false) {
               wasArrayUpdated = true;
@@ -300,11 +300,15 @@ const sendRequestAndGetTextDom = async (domainName, taskId) => {
 };
 
 const getValueFromTextDom = (string, fieldId) => {
-  let regex = new RegExp(`id="${fieldId}"(.|\\n)+?selected="selected"\\svalue="(.*)"`);
+  let regex = new RegExp(`id="${fieldId}"(.|\\n)+?selected="selected"\\svalue="(.*?)"`);
+  let matchGroup = 2
+  if (fieldId === 'issue_assigned_to_id') {
+    regex = new RegExp(`id="${fieldId}"(.|\\n)+?value="([0-9]*?)"\\sselected="selected"`);
+  }
   let match = regex.exec(string);
   if (match) {
-    if (match[2]) {
-      return match[2]; // [1] is the 1st group that's found
+    if (match[matchGroup]) {
+      return match[matchGroup]; // [1] is the 1st group that's found
     } else {
       return '';
     }
