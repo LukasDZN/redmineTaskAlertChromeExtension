@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "@types/chrome": "^0.0.196"
+  },
+  "dependencies": {
+    "posthog-js": "^1.34.0"
   }
 }

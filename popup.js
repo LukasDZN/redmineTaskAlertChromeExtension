@@ -1,6 +1,9 @@
 "use strict";
 // @ts-nocheck
 // Imports
+// import posthog from 'posthog-js'
+// posthog.init('phc_mGe8wZNClkq9sNOqAYPtavjXDvGHjpNt5M2KcrHLXuf', { api_host: 'https://app.posthog.com' })
+// posthog.capture('my event', { property: 'value' })
 // Make the dropdowns searchable (must be initiated after data is added)
 // Source: https://bluzky.github.io/nice-select2/
 // Library code
@@ -542,9 +545,16 @@ const saveAlertToStorageLocal = async () => {
                 // console.log('chrome.storage.sync new alert was created...');
                 clearAndDisplayAlerts();
             });
+            const settings = data.redmineTaskNotificationsExtensionSettings;
+            // try {
+            //   const userName = await sendMessageToContentScript('getUserInitials');
+            //   const newUserHash = cyrb53(userName);
+            //   posthog.capture('savedAlertEvent', { userHash: newUserHash, settingsObject: settings })
+            // } catch (e) {
+            //   //
+            // }
             // Set user hash
             try {
-                const settings = data.redmineTaskNotificationsExtensionSettings;
                 const userHash = settings.userHash;
                 if (userHash !== 'Anonymous') {
                     // console.log(`userHash !== 'Anonymous'`)
