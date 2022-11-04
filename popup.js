@@ -359,24 +359,25 @@ function removeCreateAlertAndAddWarningWhenUserNotInRedmineTaskPage(callback1, c
 async function getAndSetActiveTabRedmineTaskNumber(htmlElement) {
     if (htmlElement) {
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-            let redmineTaskNumber = tabs[0].url.split('/issues/')[1].substring(0, 5);
-            htmlElement.value = redmineTaskNumber;
+            const fullUrlString = tabs[0].url;
+            const regexForIssueId = /issues\/(.+?)($|\/)/gm;
+            const issueId = regexForIssueId.exec(fullUrlString);
+            htmlElement.value = !!issueId ? issueId[1] : 'error';
         });
     }
 }
 // Regex validators
-function redmineTaskNumberValidationAndStyling() {
-    if (redmineTaskNumberDiv.value) {
-        if (/[0-9]{5}/.test(redmineTaskNumberDiv.value) === true) {
-            addButton.disabled = false;
-            redmineTaskNumberDiv.classList.remove('validationFailedRedBorder');
-        }
-        else {
-            addButton.disabled = true;
-            redmineTaskNumberDiv.classList.add('validationFailedRedBorder');
-        }
-    }
-}
+// function redmineTaskNumberValidationAndStyling() {
+//   if (redmineTaskNumberDiv.value) {
+//     if (/[0-9]{5}/.test(redmineTaskNumberDiv.value) === true) {
+//       addButton.disabled = false;
+//       redmineTaskNumberDiv.classList.remove('validationFailedRedBorder');
+//     } else {
+//       addButton.disabled = true;
+//       redmineTaskNumberDiv.classList.add('validationFailedRedBorder');
+//     }
+//   }
+// }
 const validatorIntegerMoreThanOne = (input) => {
     return /^[1-9]{1,}/.test(input) && /^[0-9]+$/.test(input);
 };
@@ -846,9 +847,10 @@ const main = (async () => {
         clearAllDropdownOptions(valueDiv);
         setRedmineTaskDropdownValues();
     });
-    redmineTaskNumberDiv.addEventListener('input', function () {
-        redmineTaskNumberValidationAndStyling();
-    });
+    // Validation disabled because task number is entered automatically
+    // redmineTaskNumberDiv.addEventListener('input', function () {
+    //   redmineTaskNumberValidationAndStyling();
+    // });
     // Initialize values for new users (or after clearing storage.local)
     initializeStorageLocalObject();
     await initializeStorageLocalSettingsObject();
