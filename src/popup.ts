@@ -1,9 +1,9 @@
 // @ts-nocheck
 
 // Imports
-// import posthog from 'posthog-js'
-// posthog.init('phc_mGe8wZNClkq9sNOqAYPtavjXDvGHjpNt5M2KcrHLXuf', { api_host: 'https://app.posthog.com' })
-// posthog.capture('my event', { property: 'value' })
+import posthog from 'posthog-js'
+posthog.init('phc_mGe8wZNClkq9sNOqAYPtavjXDvGHjpNt5M2KcrHLXuf', { api_host: 'https://app.posthog.com' })
+posthog.capture('my event', { property: 'value' })
 
 // Make the dropdowns searchable (must be initiated after data is added)
 // Source: https://bluzky.github.io/nice-select2/
